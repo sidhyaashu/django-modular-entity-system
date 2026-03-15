@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+from modular_entity_system.utils import get_object_or_404
 from .models import Course
 from .serializers import CourseSerializer
 
@@ -12,7 +13,7 @@ class CourseListCreateAPIView(APIView):
 
         product_id = request.GET.get("product_id")
 
-        courses = Course.objects.all()
+        courses = Course.objects.all().order_by("-created_at")
 
         if product_id:
             courses = courses.filter(
@@ -38,18 +39,11 @@ class CourseDetailAPIView(APIView):
 
     def get_object(self, pk):
 
-        try:
-            return Course.objects.get(pk=pk)
-
-        except Course.DoesNotExist:
-            return None
+        return get_object_or_404(Course, pk)
 
     def get(self, request, pk):
 
         course = self.get_object(pk)
-
-        if not course:
-            return Response({"error": "Course not found"}, status=404)
 
         serializer = CourseSerializer(course)
 

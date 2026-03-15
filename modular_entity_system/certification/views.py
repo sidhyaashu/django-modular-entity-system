@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+from modular_entity_system.utils import get_object_or_404
 from .models import Certification
 from .serializers import CertificationSerializer
 
@@ -12,7 +13,7 @@ class CertificationListCreateAPIView(APIView):
 
         course_id = request.GET.get("course_id")
 
-        certifications = Certification.objects.all()
+        certifications = Certification.objects.all().order_by("-created_at")
 
         if course_id:
             certifications = certifications.filter(
@@ -38,18 +39,11 @@ class CertificationDetailAPIView(APIView):
 
     def get_object(self, pk):
 
-        try:
-            return Certification.objects.get(pk=pk)
-
-        except Certification.DoesNotExist:
-            return None
+        return get_object_or_404(Certification, pk)
 
     def get(self, request, pk):
 
         certification = self.get_object(pk)
-
-        if not certification:
-            return Response({"error": "Certification not found"}, status=404)
 
         serializer = CertificationSerializer(certification)
 

@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+from modular_entity_system.utils import get_object_or_404
 from .models import Product
 from .serializers import ProductSerializer
 
@@ -12,7 +13,7 @@ class ProductListCreateAPIView(APIView):
 
         vendor_id = request.GET.get("vendor_id")
 
-        products = Product.objects.all()
+        products = Product.objects.all().order_by("-created_at")
 
         if vendor_id:
             products = products.filter(
@@ -38,18 +39,11 @@ class ProductDetailAPIView(APIView):
 
     def get_object(self, pk):
 
-        try:
-            return Product.objects.get(pk=pk)
-
-        except Product.DoesNotExist:
-            return None
+        return get_object_or_404(Product, pk)
 
     def get(self, request, pk):
 
         product = self.get_object(pk)
-
-        if not product:
-            return Response({"error": "Product not found"}, status=404)
 
         serializer = ProductSerializer(product)
 

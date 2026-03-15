@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+from modular_entity_system.utils import get_object_or_404
 from .models import ProductCourseMapping
 from .serializers import ProductCourseMappingSerializer
 
@@ -10,7 +11,7 @@ class ProductCourseMappingListCreateAPIView(APIView):
 
     def get(self, request):
 
-        mappings = ProductCourseMapping.objects.all()
+        mappings = ProductCourseMapping.objects.all().order_by("-created_at")
 
         serializer = ProductCourseMappingSerializer(mappings, many=True)
 
@@ -31,11 +32,7 @@ class ProductCourseMappingDetailAPIView(APIView):
 
     def get_object(self, pk):
 
-        try:
-            return ProductCourseMapping.objects.get(pk=pk)
-
-        except ProductCourseMapping.DoesNotExist:
-            return None
+        return get_object_or_404(ProductCourseMapping, pk)
 
     def get(self, request, pk):
 
@@ -50,6 +47,18 @@ class ProductCourseMappingDetailAPIView(APIView):
         mapping = self.get_object(pk)
 
         serializer = ProductCourseMappingSerializer(mapping, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors)
+
+    def patch(self, request, pk):
+
+        mapping = self.get_object(pk)
+
+        serializer = ProductCourseMappingSerializer(mapping, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()

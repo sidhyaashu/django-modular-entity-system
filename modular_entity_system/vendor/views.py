@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+from modular_entity_system.utils import get_object_or_404
 from .models import Vendor
 from .serializers import VendorSerializer
 
@@ -10,7 +11,7 @@ class VendorListCreateAPIView(APIView):
 
     def get(self, request):
 
-        vendors = Vendor.objects.all()
+        vendors = Vendor.objects.all().order_by("-created_at")
 
         serializer = VendorSerializer(vendors, many=True)
 
@@ -31,18 +32,11 @@ class VendorDetailAPIView(APIView):
 
     def get_object(self, pk):
 
-        try:
-            return Vendor.objects.get(pk=pk)
-
-        except Vendor.DoesNotExist:
-            return None
+        return get_object_or_404(Vendor, pk)
 
     def get(self, request, pk):
 
         vendor = self.get_object(pk)
-
-        if not vendor:
-            return Response({"error": "Vendor not found"}, status=404)
 
         serializer = VendorSerializer(vendor)
 
@@ -53,6 +47,18 @@ class VendorDetailAPIView(APIView):
         vendor = self.get_object(pk)
 
         serializer = VendorSerializer(vendor, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors)
+
+    def patch(self, request, pk):
+
+        vendor = self.get_object(pk)
+
+        serializer = VendorSerializer(vendor, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()
