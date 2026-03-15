@@ -1,9 +1,9 @@
 from rest_framework import serializers
-from .models import Vendor
+from .models import ProductCourseMapping
 
 
-class ProductCourseSerializer(serializers.ModelSerializer):
+class ProductCourseMappingSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Vendor
-        fields = '__all__'
+        model = ProductCourseMapping
+        fields = "__all__"
