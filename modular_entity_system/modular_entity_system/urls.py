@@ -17,6 +17,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
 
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
@@ -33,7 +34,15 @@ schema_view = get_schema_view(
    permission_classes=[permissions.AllowAny],
 )
 
+def home(request):
+    return JsonResponse({
+        "message": "Modular Entity API is running",
+        "swagger": "/swagger",
+        "redoc": "/redoc"
+    })
+
 urlpatterns = [
+    path("", home),
     path("admin/", admin.site.urls),
     
     path("api/", include("vendor.urls")),
